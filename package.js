@@ -1,1 +1,1 @@
-enyo.depends("webview.js");
+enyo.depends("webview.js", "master.css");

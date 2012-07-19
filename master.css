@@ -1,0 +1,2 @@
+.floating-menu {position:fixed;top: 0px;width:100px;z-index:100;}
+.floating-menu-right {position:fixed; top: 0px; right: 0px; width: 100px; z-index: 100;}
