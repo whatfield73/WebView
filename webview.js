@@ -2,7 +2,6 @@ enyo.kind({
     name: "AjaxWebView",
     kind:"Control",
     
-    style: "background: white;",
    
     
     components:[
