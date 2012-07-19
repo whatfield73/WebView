@@ -139,7 +139,7 @@ var link = inEvent.target.parentNode.href;
 }
 }
 
-if (link!="")
+if (link!=""){
 this.newpage(link);
 }
 console.log("tapped");
