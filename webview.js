@@ -64,6 +64,9 @@ enyo.kind({
 
         var file = this.pages[this.currentPage].src;
 	this.base = this.pages[this.currentPage].src.slice(0, this.pages[this.currentPage].src.indexOf("/", 8)+1);
+	 if (this.base == "") {
+                this.base = file + "/";
+            }
 	this.$.scrim2.showAtZIndex(10);	
 	new enyo.Ajax({
             url: ""+file, 
@@ -93,20 +96,7 @@ this.currentPage = this.pages.length;
 
     processChapter:function() {
         
-        
-        $("pre code").each(function(){
-            var text = $(this).text();
-            var lines = text.split("\n"); 
-            var newText = "";
-            for(var i=0; i<lines.length; i++) {
-                var line = lines[i];
-                line = line.replace(/</g,'&lt;');
-                line = line.replace(/>/g,'&gt;');
-                newText += "<span>"+line+" </span>";
-            }
-            $(this).html(newText);
-        });
-       
+      
 
       if (this.$.content.hasNode()) {
                var node = this.$.content.node;
