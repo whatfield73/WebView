@@ -87,7 +87,7 @@ enyo.kind({
 			.go();
     }
 	},
-    newpage: function(src) {
+    call: function(src) {
 this.currentPage = this.pages.length;
 	this.pages[this.pages.length] = {"src": src};
 	
