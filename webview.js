@@ -129,7 +129,7 @@ var link = inEvent.target.parentNode.href;
 }
 
 if (link!=""){
-this.newpage(link);
+this.call(link);
 }
 console.log("tapped");
 inEvent.preventDefault();
