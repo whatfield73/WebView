@@ -1,1 +1,2 @@
 This is a rework of Josh Marinacci's webview using Ajax and Enyo 2.  It doesn't do everything a webOS webView did but it shouldn't be difficult to add new features.  It allows you to change the sizing of the page easily.  The basic capabilities are that it will load pages and follow clicks of both links and images.  Still to be done for now: process forms when submitted.  Known issues: Doesn't process css for Android 2.3 in webview.
+Sample at: http://jsfiddle.net/FuUXv/
