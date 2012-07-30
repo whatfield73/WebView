@@ -26,6 +26,8 @@ enyo.kind({
         this.inherited(arguments);
 	this.pages=[];
 	this.base = "";
+	this.method = "GET";
+	this.postBody = "";
     this.currentPage=0;
      this.setupMenu=false;
         this.loadit();
@@ -67,11 +69,16 @@ enyo.kind({
                 this.base = file + "/";
             }
 	this.$.scrim2.showAtZIndex(10);	
-	new enyo.Ajax({
+new enyo.Ajax({
+	    cacheBust: false,
+            method: this.method,
+	    postBody: this.postBody,
             url: ""+file, 
 		    handleAs: "text"})
 			.response(this, function(inSender, inValue){
 		var i=0;
+		this.method = "GET";
+		this.postBody = "";
 		this.$.scrim2.hideAtZIndex(10);
 		var str = inValue.replace(/href=\"\//g, 'href="'+ this.base);   //update on site links with base uri
 		str = str.replace(/src=\"\//g, 'src="' + this.base);
@@ -86,7 +93,8 @@ enyo.kind({
 			.go();
     }
 	},
-    call: function(src) {
+    call: function(src, base) {
+    	this.secondbase = base;
 this.currentPage = this.pages.length;
 	this.pages[this.pages.length] = {"src": src};
 	
@@ -103,7 +111,8 @@ this.currentPage = this.pages.length;
                for (i=0; i<nodes.length; i++) {
                if (nodes[i].nodeName == "SCRIPT") {
                        console.log("found script");
-                       eval(nodes[i].innerText);
+                       try {eval(nodes[i].innerText);}
+                       catch(e){console.log(e);}
                        }
 
                nodes[i].baseURI = this.base;
@@ -116,11 +125,41 @@ this.currentPage = this.pages.length;
     },
 // process touch events for taps on links, etc.
 catchtap: function(inSender, inEvent) { 
-console.log(inEvent.target.href);
-var link = "";
+if (inEvent.target.form && inEvent.target.type == "submit") {
+this.method = inEvent.target.form.method;
+if (this.method == "post") {
+link = this.pages[this.currentPage].src;
+this.postBody = "";
+for (i=0; i<inEvent.target.form.length-1; i++) {
+this.postBody = this.postBody + inEvent.target.form[i].name + "=" + inEvent.target.form[i].value;
+if (inEvent.target.form.length-1 != i+1) {
+this.postBody = this.postBody + "&";
+}
+}
+}
+else {
+link = inEvent.target.form.action + "?";
+for (i=0; i<inEvent.target.form.length-1; i++) {
+link = link + inEvent.target.form[i].name + "=" + inEvent.target.form[i].value;
+if (inEvent.target.form.length-1 != i+1) {
+link = link + "&";
+}
+}
+}
+console.log(link);
+console.log(this.postBody);
+}
+
 //  process touch event on link
-if(inEvent.target.href) {	
-var link = inEvent.target.href;}
+else if(inEvent.target.href) {
+if (inEvent.target.href.match(/file:/g)) {
+	link = this.secondbase + inEvent.target.innerHTML;
+	this.secondbase = link;
+}
+else {	
+var link = inEvent.target.href;
+}
+}
 else {
 //  process for image touch
 if (inEvent.target.parentNode.href){
@@ -129,10 +168,20 @@ var link = inEvent.target.parentNode.href;
 }
 
 if (link!=""){
-this.call(link);
+this.newpage(link, this.secondbase);
 }
 console.log("tapped");
 inEvent.preventDefault();
 return true;
+},
+catchhold: function(inSender, inEvent) {
+var link = "";
+if (inEvent.target.href.match(/file:/g)) {
+	link = this.secondbase + inEvent.target.innerHTML;
+}
+else {
+link = inEvent.target.href;
+}
+this.doSendHold({link: link});
 }
 });
