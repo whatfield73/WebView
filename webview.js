@@ -88,6 +88,8 @@ new enyo.Ajax({
 			})
 			.error(this, function(inSender, inValue) {
 				console.log("error " + inValue);
+				this.method = "GET";
+				this.postBody = "";
 				this.$.scrim2.hideAtZIndex(10);
 			})
 			.go();
@@ -128,7 +130,12 @@ catchtap: function(inSender, inEvent) {
 if (inEvent.target.form && inEvent.target.type == "submit") {
 this.method = inEvent.target.form.method;
 if (this.method == "post") {
+if (!inEvent.target.form.action.match("http")) {
 link = this.pages[this.currentPage].src;
+}
+else {
+link = inEvent.target.form.action;
+}
 this.postBody = "";
 for (i=0; i<inEvent.target.form.length-1; i++) {
 this.postBody = this.postBody + inEvent.target.form[i].name + "=" + inEvent.target.form[i].value;
@@ -138,7 +145,12 @@ this.postBody = this.postBody + "&";
 }
 }
 else {
+if (!inEvent.target.form.action.match("http")) {
+link = this.pages[this.currentPage].src + "?";
+}
+else {
 link = inEvent.target.form.action + "?";
+}
 for (i=0; i<inEvent.target.form.length-1; i++) {
 link = link + inEvent.target.form[i].name + "=" + inEvent.target.form[i].value;
 if (inEvent.target.form.length-1 != i+1) {
@@ -166,12 +178,12 @@ if (inEvent.target.parentNode.href){
 var link = inEvent.target.parentNode.href;
 }
 }
-
+console.log("tapped");
+inEvent.preventDefault();
 if (link!=""){
 this.newpage(link, this.secondbase);
 }
-console.log("tapped");
-inEvent.preventDefault();
+
 return true;
 },
 catchhold: function(inSender, inEvent) {
