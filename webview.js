@@ -181,7 +181,7 @@ var link = inEvent.target.parentNode.href;
 console.log("tapped");
 inEvent.preventDefault();
 if (link!=""){
-this.newpage(link, this.secondbase);
+this.call(link, this.secondbase);
 }
 
 return true;
