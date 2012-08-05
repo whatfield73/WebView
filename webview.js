@@ -97,9 +97,18 @@ new enyo.Ajax({
 	},
     call: function(src, base) {
     	this.secondbase = base;
+if (this.$.forb.disabled === false) {
+this.currentPage++;
+this.pages[this.currentPage] = {"src": src};
+if (this.pages.length > this.currentPage + 1) {
+this.pages.splice(this.currentPage + 1, this.pages.length- this.currentPage);  // delete pages ahead of current page because we are starting a new branch in history
+}
+}
+else {
 this.currentPage = this.pages.length;
 	this.pages[this.pages.length] = {"src": src};
-	
+}	
+
 	this.loadit();
 	},
 
