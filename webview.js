@@ -1,20 +1,23 @@
 enyo.kind({
-    name: "AjaxWebView",
+    name: "WebView",
     kind:"Control",
-    
-   
+   events: {
+	onSendHold: ""
+	},
+
     
     components:[
-{kind: "onyx.Scrim", name: "scrim2", classes: "onyx-scrim enyo-fit", floating: false, showing: false, components: [
-   {kind: "onyx.Spinner"}
-]},
+
+   
 	{kind: "onyx.Button", classes: "floating-menu",name: "backb", content: "Back", disabled: true, onclick: "goPrevious"}, {kind: "onyx.Button", classes: "floating-menu-right", content: "Forward", name: "forb", disabled: true, onclick: "goNext"}, {kind: "Scroller", classes: "enyo-fit", components: [
-        { 
+        {kind: "onyx.Spinner", name: "scrim2", classes: "onyx-light onyx-scrim", attributes: {"z-index": 10}, centered: true, floating: true, scrim: true, showing: false},{ 
      
                            name: "content", 
                             onclick: "catchtap",
+				style: "padding: 8px 8px 8px 8px;",
                             content:"",
-			    allowHtml: true
+			    allowHtml: true,
+			    onhold: "catchhold"
                 }
                 
         ]}
@@ -68,10 +71,11 @@ enyo.kind({
 	 if (this.base == "") {
                 this.base = file + "/";
             }
-	this.$.scrim2.showAtZIndex(10);	
-new enyo.Ajax({
+
+	this.$.scrim2.setShowing(true);	
+	new enyo.Ajax({
 	    cacheBust: false,
-            method: this.method,
+	    method: this.method,
 	    postBody: this.postBody,
             url: ""+file, 
 		    handleAs: "text"})
@@ -79,7 +83,7 @@ new enyo.Ajax({
 		var i=0;
 		this.method = "GET";
 		this.postBody = "";
-		this.$.scrim2.hideAtZIndex(10);
+		this.$.scrim2.setShowing(false);
 		var str = inValue.replace(/href=\"\//g, 'href="'+ this.base);   //update on site links with base uri
 		str = str.replace(/src=\"\//g, 'src="' + this.base);
                 this.$.content.setContent(str);
@@ -88,15 +92,16 @@ new enyo.Ajax({
 			})
 			.error(this, function(inSender, inValue) {
 				console.log("error " + inValue);
+				this.$.scrim2.setShowing(false);
 				this.method = "GET";
 				this.postBody = "";
-				this.$.scrim2.hideAtZIndex(10);
 			})
 			.go();
     }
 	},
     call: function(src, base) {
     	this.secondbase = base;
+
 if (this.$.forb.disabled === false) {
 this.currentPage++;
 this.pages[this.currentPage] = {"src": src};
@@ -108,22 +113,47 @@ else {
 this.currentPage = this.pages.length;
 	this.pages[this.pages.length] = {"src": src};
 }	
-
 	this.loadit();
 	},
 
     processChapter:function() {
         
-      
-
-      if (this.$.content.hasNode()) {
+         if (this.$.content.hasNode()) {
                var node = this.$.content.node;
                var nodes = node.children;
-               for (i=0; i<nodes.length; i++) {
+		var lengthn = nodes.length;
+		var lengthn2 = lengthn;
+               for (i=0; i<lengthn2; i++) {   //nodes.length
                if (nodes[i].nodeName == "SCRIPT") {
+			if (nodes[i].src) {
+			console.log("src found");
+			if (nodes[i].src.match(/enyo.js/)) {
+			this.enyoflag = true;
+			}
+			else {
+			if (nodes[i].src.match(/package.js/) && this.enyoflag == true) {
+			var tt = new enyo.loaderFactory(this.enyo.machine);
+			tt.load(nodes[i].src);
+			}
+			else {
+			
+var r = document.createElement("script");
+			
+r.src = nodes[i].src;
+			r.onLoad = function() {console.log("r onload");}, r.onError = function(e) {console.log(e);};
+			var node1 = document.importNode(r);
+			console.log(node1);
+			node.appendChild(node1);
+			}
+			}
+			}
                        console.log("found script");
-                       try {eval(nodes[i].innerText);}
-                       catch(e){console.log(e);}
+			try {
+                       with (node) {eval(nodes[i].innerText);}
+				}
+			catch(e) {
+			console.log(e);
+			}
                        }
 
                nodes[i].baseURI = this.base;
@@ -136,6 +166,10 @@ this.currentPage = this.pages.length;
     },
 // process touch events for taps on links, etc.
 catchtap: function(inSender, inEvent) { 
+
+
+//console.log(inEvent.target.href);
+var link = "";
 if (inEvent.target.form && inEvent.target.type == "submit") {
 this.method = inEvent.target.form.method;
 if (this.method == "post") {
@@ -177,6 +211,15 @@ if (inEvent.target.href.match(/file:/g)) {
 	link = this.secondbase + inEvent.target.innerHTML;
 	this.secondbase = link;
 }
+else if(inEvent.target.href.match("javascript")) {
+try {
+eval(inEvent.target.onclick);
+}
+catch(e) {
+console.log(e);
+}
+return true;
+}
 else {	
 var link = inEvent.target.href;
 }
@@ -194,6 +237,9 @@ this.call(link, this.secondbase);
 }
 
 return true;
+
+
+
 },
 catchhold: function(inSender, inEvent) {
 var link = "";
@@ -204,5 +250,6 @@ else {
 link = inEvent.target.href;
 }
 this.doSendHold({link: link});
+return true;
 }
 });
